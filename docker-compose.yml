@@ -109,7 +109,7 @@ services:
     ports:
       - ${READARR_PORT}:8787
     volumes:
-      - ${CONFIG_DIR}readarr:/config
+      - ${CONFIG_DIR}/readarr:/config
       - ${DATA_DIR}:/data
 
 
@@ -177,50 +177,36 @@ services:
     container_name: plex
     image: lscr.io/linuxserver/plex:latest
     restart: unless-stopped
-    network_mode: host
+    networks:
+      - default
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TIMEZONE}
       - PLEX_CLAIM= #optional
+    ports:
+      - "${PLEX_WEB_PORT}:32400"
+      - "1900:1900"
+      - "3005:3005"
+      - "5353:5353"
+      - "8324:8324"
+      - "32410:32410"
+      - "32412:32412"
+      - "32413:32413"
+      - "32414:32414"
+      - "32469:32469"
     volumes:
       - ${CONFIG_DIR}/plex:/config
       - ${DATA_DIR}/media:/data/media
       
 # Watchtower
 
-  # watchtower:
-  #   container_name: watchtower
-  #   environment:
-  #     REPO_PASS: ""
-  #     REPO_USER: ""
-  #     TZ: America/Vancouver
-  #     WATCHTOWER_CLEANUP: "true"
-  #     WATCHTOWER_INCLUDE_STOPPED: "false"
-  #     WATCHTOWER_MONITOR_ONLY: "false"
-  #     WATCHTOWER_NOTIFICATION_TEMPLATE: '{{range .}}{{.Message}}{{println}}{{end}}'
-  #     WATCHTOWER_NOTIFICATION_URL: ""
-  #     WATCHTOWER_NOTIFICATIONS: shoutrrr
-  #     WATCHTOWER_NOTIFICATIONS_LEVEL: info
-  #     WATCHTOWER_SCHEDULE: 0 0 4 * * *
-  #     WATCHTOWER_TIMEOUT: 10s
-  #   hostname: ubuntu-Macmini7-1
-  #   image: ghcr.io/containrrr/watchtower:latest
-  #   networks:
-  #     default: null
-  #   restart: unless-stopped
-  #   volumes:
-  #     - type: bind
-  #       source: /etc/localtime
-  #       target: /etc/localtime
-  #       read_only: true
-  #       bind:
-  #         create_host_path: true
-  #     - type: bind
-  #       source: /media/ogidu/mediaserver/arrs #fix this
-  #       target: /storage
-  #       bind:
-  #         create_host_path: true
-  #     - /var/run/docker.sock:/var/run/docker.sock
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    command: --cleanup
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 
