@@ -177,14 +177,11 @@ services:
     container_name: plex
     image: lscr.io/linuxserver/plex:latest
     restart: unless-stopped
-    networks:
-      - default
     network_mode: host
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TIMEZONE}
-      - VERSION=docker
       - PLEX_CLAIM= #optional
     volumes:
       - ${CONFIG_DIR}/plex:/config
