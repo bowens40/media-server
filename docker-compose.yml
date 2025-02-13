@@ -2,86 +2,131 @@ version: "1"
 
 services:       
 
+# portainer
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:latest
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    ports:
+      - "${PORTAINER_PORT}:9000"
+    volumes:
+      - ${CONFIG_DIR}/portainer:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
+# overseerr
+
+  overseerr:
+    container_name: overseerr
+    image: lscr.io/linuxserver/overseerr:latest
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - LOG_LEVEL=debug
+    ports:
+      - "${OVERSEERR_PORT}:5055" # is this needed
+    volumes:
+      - ${CONFIG_DIR}/overseerr:/config
+    links:
+      - sonarr
+      - radarr
+      - plex
+
 # prowlarr
 
   prowlarr:
-    image: linuxserver/prowlarr:latest
     container_name: prowlarr
-    hostname: ubuntu-Macmini7-1
-    volumes:
-      - ${ARRPATH}Prowlarr/config:/config
-      - ${ARRPATH}Prowlarr/backup:/data/Backup
-      - ${ARRPATH}Downloads:/downloads
-    ports:
-      - 9696:9696
+    image: linuxserver/prowlarr:latest
     restart: unless-stopped
-    env_file:
-      - '.env'
+    networks:
+      - default
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - "${CONFIG_DIR}/prowlarr:/config"
+    ports:
+      - "${PROWLARR_PORT}:9696"
+
       
 # sonarr
 
   sonarr:
-    image: linuxserver/sonarr:latest
     container_name: sonarr
-    hostname: ubuntu-Macmini7-1
-    volumes:
-      - ${ARRPATH}Sonarr/config:/config
-      - ${ARRPATH}Sonarr/backup:/data/Backup
-      - ${ARRPATH}Sonarr/tvshows:/data/tvshows
-      - ${ARRPATH}Downloads:/downloads
-    ports:
-      - 8989:8989
+    image: linuxserver/sonarr:latest
     restart: unless-stopped
-    env_file:
-      - '.env'
+    networks:
+      - default
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - "${CONFIG_DIR}/sonarr:/config"
+      - "${DATA_DIR}:/data"
+    ports:
+      - "${SONARR_PORT}:8989"
       
 # radarr
 
   radarr:
-    image: linuxserver/radarr:latest
     container_name: radarr
-    hostname: ubuntu-Macmini7-1
-    volumes:
-      - ${ARRPATH}Radarr/config:/config
-      - ${ARRPATH}Radarr/movies:/data/movies
-      - ${ARRPATH}Radarr/backup:/data/Backup
-      - ${ARRPATH}Downloads:/downloads
-    ports:
-      - 7878:7878
+    image: linuxserver/radarr:latest
     restart: unless-stopped
-    env_file:
-      - '.env'
+    networks:
+      - default
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - "${CONFIG_DIR}/radarr:/config"
+      - "${DATA_DIR}:/data"
+    ports:
+      - "${RADARR_PORT}:7878"
       
 # lidarr                                           
   lidarr:
-    image: linuxserver/lidarr:latest
     container_name: lidarr
-    hostname: ubuntu-Macmini7-1
-    volumes:
-      - ${ARRPATH}Lidarr/config:/config
-      - ${ARRPATH}Lidarr/music:/data/musicfolder
-      - ${ARRPATH}Downloads:/downloads
-    ports:
-      - 8686:8686
+    image: linuxserver/lidarr:latest
     restart: unless-stopped
-    env_file:
-      - '.env'
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - "${CONFIG_DIR}/lidarr:/config"
+      - "${DATA_DIR}:/data"
+    ports:
+      - "${LIDARR_PORT}:8686"
       
-# readarr
+# readarr 
 
   readarr:
-    image: linuxserver/readarr:develop
     container_name: readarr
-    hostname: ubuntu-Macmini7-1
-    volumes:
-      - ${ARRPATH}Readarr/config:/config
-      - ${ARRPATH}Readarr/books:/data/books
-      - ${ARRPATH}Downloads:/downloads
-    ports:
-      - 8787:8787
+    image: linuxserver/readarr:develop
     restart: unless-stopped
-    env_file:
-      - '.env'
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    ports:
+      - "${READARR_PORT}:8787"
+    volumes:
+      - ${CONFIG_DIR}readarr:/config
+      - "${DATA_DIR}:/data"
+
 
 # homarr
 
@@ -89,125 +134,96 @@ services:
     container_name: homarr
     image: ghcr.io/ajnart/homarr:latest
     restart: unless-stopped
-    volumes:
-      - ${ARRPATH}Homarr/configs:/app/data/configs
-      - ${ARRPATH}Homarr/icons:/app/public/icons
-      - ${ARRPATH}Homarr/data:/data
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
     ports:
-      - '7575:7575'
-    env_file:
-      - '.env'
+      - "${HOMARR_PORT}:7575"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONFIG_DIR}/homarr:/config
 
-          
+
+# homepage
+
+  homepage:
+    container_name: homepage
+    image: ghcr.io/gethomepage/homepage:latest
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    ports:
+      - "${HOMEPAGE_PORT}:3000"
+    volumes:
+      - ${CONFIG_DIR}/homepage:/config
+      - /var/run/docker.sock:/var/run/docker.sock # (optional) For docker integrations, see alternative methods
+      
 # qBitorrent
 
   qbittorrent:
-    image: linuxserver/qbittorrent:latest
     container_name: qbittorrent
-    hostname: ubuntu-Macmini7-1
+    image: linuxserver/qbittorrent:latest
     restart: unless-stopped
+    networks:
+      - default
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
-    volumes:
-      - ${ARRPATH}qbittorrent/config:/config
-      - ${ARRPATH}Downloads:/downloads
-    ports:
-      - 8080:8080
-      - 6881:6881
-      - 6881:6881/udp
     environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
       - WEBUI_PORT=8080
       - TORRENTING_PORT=6881
+    ports:
+      - "${QBITTORRENT_WEBUI_PORT}:8080"
+      - "${QBITTORRENT_CONNECTION_PORT}:6881"
+      - "${QBITTORRENT_CONNECTION_PORT}:6881/udp"
+    volumes:
+      - ${CONFIG_DIR}/qbittorrent:/config
+      - ${DATA_DIR}/torrents:/data/torrents
     healthcheck:
       start_period: 15s
-    env_file:
-      - '.env'
 
-# overseerr
+# Plex
 
-  overseerr:
-    image: lscr.io/linuxserver/overseerr:latest
-    container_name: overseerr
-    hostname: ubuntu-Macmini7-1
-    restart: unless-stopped
-    networks:
-      default: null
-    ports:
-      - 5055:5055
-    environment:
-      - LOG_LEVEL=debug
-      - PORT=5055 #optional
-    volumes:
-      - ${ARRPATH}overseerr/config:/config
-    env_file:
-      - '.env'
 
-# portainer
-
-  portainer:
-    command:
-      - -H
-      - unix:///var/run/docker.sock
-    container_name: portainer
-    hostname: ubuntu-Macmini7-1
-    image: portainer/portainer-ce:latest
-    networks:
-      default: null
-    ports:
-      - 9000:9000
-    restart: unless-stopped
-    volumes:
-      - ${ARRPATH}portainer/config:/config
-      - ${ARRPATH}Downloads:/downloads
-      - type: bind
-        source: /var/run/docker.sock
-        target: /var/run/docker.sock
-        bind:
-          create_host_path: true
-    env_file:
-      - '.env'
       
 # Watchtower
 
-  watchtower:
-    container_name: watchtower
-    environment:
-      REPO_PASS: ""
-      REPO_USER: ""
-      TZ: America/Vancouver
-      WATCHTOWER_CLEANUP: "true"
-      WATCHTOWER_INCLUDE_STOPPED: "false"
-      WATCHTOWER_MONITOR_ONLY: "false"
-      WATCHTOWER_NOTIFICATION_TEMPLATE: '{{range .}}{{.Message}}{{println}}{{end}}'
-      WATCHTOWER_NOTIFICATION_URL: ""
-      WATCHTOWER_NOTIFICATIONS: shoutrrr
-      WATCHTOWER_NOTIFICATIONS_LEVEL: info
-      WATCHTOWER_SCHEDULE: 0 0 4 * * *
-      WATCHTOWER_TIMEOUT: 10s
-    hostname: ubuntu-Macmini7-1
-    image: ghcr.io/containrrr/watchtower:latest
-    networks:
-      default: null
-    restart: unless-stopped
-    volumes:
-      - type: bind
-        source: /etc/localtime
-        target: /etc/localtime
-        read_only: true
-        bind:
-          create_host_path: true
-      - type: bind
-        source: /media/ogidu/mediaserver/arrs
-        target: /storage
-        bind:
-          create_host_path: true
-      - type: bind
-        source: /var/run/docker.sock
-        target: /var/run/docker.sock
-        bind:
-          create_host_path: true
-    env_file:
-      - '.env'
-networks:
-  default:
-    name: compose_default
+  # watchtower:
+  #   container_name: watchtower
+  #   environment:
+  #     REPO_PASS: ""
+  #     REPO_USER: ""
+  #     TZ: America/Vancouver
+  #     WATCHTOWER_CLEANUP: "true"
+  #     WATCHTOWER_INCLUDE_STOPPED: "false"
+  #     WATCHTOWER_MONITOR_ONLY: "false"
+  #     WATCHTOWER_NOTIFICATION_TEMPLATE: '{{range .}}{{.Message}}{{println}}{{end}}'
+  #     WATCHTOWER_NOTIFICATION_URL: ""
+  #     WATCHTOWER_NOTIFICATIONS: shoutrrr
+  #     WATCHTOWER_NOTIFICATIONS_LEVEL: info
+  #     WATCHTOWER_SCHEDULE: 0 0 4 * * *
+  #     WATCHTOWER_TIMEOUT: 10s
+  #   hostname: ubuntu-Macmini7-1
+  #   image: ghcr.io/containrrr/watchtower:latest
+  #   networks:
+  #     default: null
+  #   restart: unless-stopped
+  #   volumes:
+  #     - type: bind
+  #       source: /etc/localtime
+  #       target: /etc/localtime
+  #       read_only: true
+  #       bind:
+  #         create_host_path: true
+  #     - type: bind
+  #       source: /media/ogidu/mediaserver/arrs #fix this
+  #       target: /storage
+  #       bind:
+  #         create_host_path: true
+  #     - /var/run/docker.sock:/var/run/docker.sock
+
+

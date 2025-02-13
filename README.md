@@ -18,6 +18,9 @@ To set up a container-based automated plex media server
 - What is the proper way to list the path of an external volume?
 - Do I need a backup folder for each?
 
+# Notes/Reminders
+- 
+
 # sources
 https://github.com/automation-avenue/youtube-39-arr-apps-1-click/blob/main/
 - starting place
