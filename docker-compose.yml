@@ -15,7 +15,7 @@ services:
       - PGID=${PGID}
       - TZ=${TIMEZONE}
     ports:
-      - "${PORTAINER_PORT}:9000"
+      - ${PORTAINER_PORT}:9000
     volumes:
       - ${CONFIG_DIR}/portainer:/data
       - /var/run/docker.sock:/var/run/docker.sock
@@ -34,7 +34,7 @@ services:
       - TZ=${TIMEZONE}
       - LOG_LEVEL=debug
     ports:
-      - "${OVERSEERR_PORT}:5055" # is this needed
+      - ${OVERSEERR_PORT}:5055 # is this needed
     volumes:
       - ${CONFIG_DIR}/overseerr:/config
     links:
@@ -55,9 +55,9 @@ services:
       - PGID=${PGID}
       - TZ=${TIMEZONE}
     volumes:
-      - "${CONFIG_DIR}/prowlarr:/config"
+      - ${CONFIG_DIR}/prowlarr:/config
     ports:
-      - "${PROWLARR_PORT}:9696"
+      - ${PROWLARR_PORT}:9696
 
       
 # sonarr
@@ -73,10 +73,10 @@ services:
       - PGID=${PGID}
       - TZ=${TIMEZONE}
     volumes:
-      - "${CONFIG_DIR}/sonarr:/config"
-      - "${DATA_DIR}:/data"
+      - ${CONFIG_DIR}/sonarr:/config
+      - ${DATA_DIR}:/data
     ports:
-      - "${SONARR_PORT}:8989"
+      - ${SONARR_PORT}:8989
       
 # radarr
 
@@ -90,26 +90,11 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TIMEZONE}
-    volumes:
-      - "${CONFIG_DIR}/radarr:/config"
-      - "${DATA_DIR}:/data"
     ports:
-      - "${RADARR_PORT}:7878"
-      
-# lidarr                                           
-  lidarr:
-    container_name: lidarr
-    image: linuxserver/lidarr:latest
-    restart: unless-stopped
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TIMEZONE}
+      - ${RADARR_PORT}:7878
     volumes:
-      - "${CONFIG_DIR}/lidarr:/config"
-      - "${DATA_DIR}:/data"
-    ports:
-      - "${LIDARR_PORT}:8686"
+      - ${CONFIG_DIR}/radarr:/config
+      - ${DATA_DIR}:/data
       
 # readarr 
 
@@ -122,10 +107,10 @@ services:
       - PGID=${PGID}
       - TZ=${TIMEZONE}
     ports:
-      - "${READARR_PORT}:8787"
+      - ${READARR_PORT}:8787
     volumes:
       - ${CONFIG_DIR}readarr:/config
-      - "${DATA_DIR}:/data"
+      - ${DATA_DIR}:/data
 
 
 # homarr
@@ -139,7 +124,7 @@ services:
       - PGID=${PGID}
       - TZ=${TIMEZONE}
     ports:
-      - "${HOMARR_PORT}:7575"
+      - ${HOMARR_PORT}:7575
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${CONFIG_DIR}/homarr:/config
@@ -155,7 +140,7 @@ services:
       - PGID=${PGID}
       - TZ=${TIMEZONE}
     ports:
-      - "${HOMEPAGE_PORT}:3000"
+      - ${HOMEPAGE_PORT}:3000
     volumes:
       - ${CONFIG_DIR}/homepage:/config
       - /var/run/docker.sock:/var/run/docker.sock # (optional) For docker integrations, see alternative methods
@@ -177,9 +162,9 @@ services:
       - WEBUI_PORT=8080
       - TORRENTING_PORT=6881
     ports:
-      - "${QBITTORRENT_WEBUI_PORT}:8080"
-      - "${QBITTORRENT_CONNECTION_PORT}:6881"
-      - "${QBITTORRENT_CONNECTION_PORT}:6881/udp"
+      - ${QBITTORRENT_WEBUI_PORT}:8080
+      - ${QBITTORRENT_CONNECTION_PORT}:6881
+      - ${QBITTORRENT_CONNECTION_PORT}:6881/udp
     volumes:
       - ${CONFIG_DIR}/qbittorrent:/config
       - ${DATA_DIR}/torrents:/data/torrents
@@ -188,7 +173,22 @@ services:
 
 # Plex
 
-
+  plex:
+    container_name: plex
+    image: lscr.io/linuxserver/plex:latest
+    restart: unless-stopped
+    networks:
+      - default
+    network_mode: host
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - VERSION=docker
+      - PLEX_CLAIM= #optional
+    volumes:
+      - ${CONFIG_DIR}/plex:/config
+      - ${DATA_DIR}/media:/data/media
       
 # Watchtower
 
