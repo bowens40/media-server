@@ -1,4 +1,4 @@
-version: "1"
+version: "1.1"
 
 services:       
 
@@ -6,10 +6,9 @@ services:
 
   portainer:
     container_name: portainer
+    hostname: portainer
     image: portainer/portainer-ce:latest
     restart: unless-stopped
-    networks:
-      - default
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -24,17 +23,16 @@ services:
 
   overseerr:
     container_name: overseerr
+    hostname: overseerr
     image: lscr.io/linuxserver/overseerr:latest
     restart: unless-stopped
-    networks:
-      - default
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TIMEZONE}
       - LOG_LEVEL=debug
     ports:
-      - ${OVERSEERR_PORT}:5055 # is this needed
+      - ${OVERSEERR_PORT}:5055 
     volumes:
       - ${CONFIG_DIR}/overseerr:/config
     links:
@@ -46,10 +44,9 @@ services:
 
   prowlarr:
     container_name: prowlarr
+    hostname: prowlarr
     image: linuxserver/prowlarr:latest
     restart: unless-stopped
-    networks:
-      - default
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -64,10 +61,9 @@ services:
 
   sonarr:
     container_name: sonarr
+    hostname: sonarr
     image: linuxserver/sonarr:latest
     restart: unless-stopped
-    networks:
-      - default
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -82,10 +78,9 @@ services:
 
   radarr:
     container_name: radarr
+    hostname: radarr
     image: linuxserver/radarr:latest
     restart: unless-stopped
-    networks:
-      - default
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -100,6 +95,7 @@ services:
 
   readarr:
     container_name: readarr
+    hostname: readarr
     image: linuxserver/readarr:develop
     restart: unless-stopped
     environment:
@@ -117,6 +113,7 @@ services:
 
   homarr:
     container_name: homarr
+    hostname: homarr
     image: ghcr.io/ajnart/homarr:latest
     restart: unless-stopped
     environment:
@@ -132,27 +129,27 @@ services:
 
 # homepage
 
-  homepage:
-    container_name: homepage
-    image: ghcr.io/gethomepage/homepage:latest
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TIMEZONE}
-    ports:
-      - ${HOMEPAGE_PORT}:3000
-    volumes:
-      - ${CONFIG_DIR}/homepage:/config
-      - /var/run/docker.sock:/var/run/docker.sock # (optional) For docker integrations, see alternative methods
+  # homepage:
+  #   container_name: homepage
+  #   hostname: homepage
+  #   image: ghcr.io/gethomepage/homepage:latest
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${PGID}
+  #     - TZ=${TIMEZONE}
+  #   ports:
+  #     - ${HOMEPAGE_PORT}:3000
+  #   volumes:
+  #     - ${CONFIG_DIR}/homepage:/config
+  #     - /var/run/docker.sock:/var/run/docker.sock # (optional) For docker integrations, see alternative methods
       
 # qBitorrent
 
   qbittorrent:
     container_name: qbittorrent
+    hostname: qbittorrent
     image: linuxserver/qbittorrent:latest
     restart: unless-stopped
-    networks:
-      - default
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     environment:
@@ -175,38 +172,57 @@ services:
 
   plex:
     container_name: plex
-    image: lscr.io/linuxserver/plex:latest
+    hostname: plex
+    image: plexinc/pms-docker:latest
     restart: unless-stopped
-    networks:
-      - default
+    network_mode: host    
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TIMEZONE}
-      - PLEX_CLAIM= #optional
-    ports:
-      - "${PLEX_WEB_PORT}:32400"
-      - "1900:1900"
-      - "3005:3005"
-      - "5353:5353"
-      - "8324:8324"
-      - "32410:32410"
-      - "32412:32412"
-      - "32413:32413"
-      - "32414:32414"
-      - "32469:32469"
+      - PLEX_CLAIM=${PLEX_CLAIM}
+    # ports:   # seems to conflict with "network_mode: host"
+    #   - "${PLEX_WEB_PORT}:32400/tcp"
+    #   - "1900:1900/udp"
+    #   - "3005:3005/udp"
+    #   - "5353:5353"
+    #   - "8324:8324/tcp"
+    #   - "32410:32410/udp"
+    #   - "32412:32412/udp"
+    #   - "32413:32413/udp"
+    #   - "32414:32414/udp"
+    #   - "32469:32469/tcp"
     volumes:
       - ${CONFIG_DIR}/plex:/config
       - ${DATA_DIR}/media:/data/media
       
+#tautulli
+
+  tautulli:
+    container_name: tautulli
+    hostname: tautulli
+    image: ghcr.io/tautulli/tautulli
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    depends_on: 
+      - plex 
+    ports:
+      - 8181:8181
+    volumes:
+      - ${CONFIG_DIR}/tautulli:/config
+
 # Watchtower
 
-  watchtower:
-    image: containrrr/watchtower
-    container_name: watchtower
-    command: --cleanup
-    restart: always
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+  # watchtower:
+  #   container_name: watchtower
+  #   hostname: watchtower
+  #   image: containrrr/watchtower
+  #   command: --cleanup
+  #   restart: always
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
 
 
